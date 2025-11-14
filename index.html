@@ -61,14 +61,15 @@
             const { useState, useEffect, useCallback, useRef, useMemo } = React;
             const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore, doc, onSnapshot, collection, runTransaction, setDoc, query } = window.firebaseDependencies;
 
-            // --- 전역 설정 및 상수 ---
+            // --- 전역 설정 및 상수 (경로 수정됨) ---
             const CANVAS_SIZE = 1024;
             const CHUNK_SIZE = 32;    
             const CHUNK_COUNT = CANVAS_SIZE / CHUNK_SIZE; 
             const COOLDOWN_SECONDS = 300; 
 
-            const PIXEL_CHUNKS_PATH = 'canvas_data/public_canvas/chunks';
-            const USER_STATUS_PATH = 'canvas_data/user_status';
+            // 경로 수정: 최상위 컬렉션으로 변경하여 Firebase 세그먼트 오류 해결
+            const PIXEL_CHUNKS_PATH = 'pixel_chunks';
+            const USER_STATUS_PATH = 'user_statuses';
 
             const BASE_PALETTE = [
             '#000000', '#FFFFFF', '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#00FFFF', '#FF00FF',
@@ -177,6 +178,7 @@
                 useEffect(() => {
                     if (!db || !userId) return;
 
+                    // 경로 수정 반영: doc(db, 'user_statuses', userId)
                     const userDocRef = doc(db, USER_STATUS_PATH, userId);
 
                     const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
@@ -207,6 +209,7 @@
                 useEffect(() => {
                     if (!db || !isAuthReady) return;
 
+                    // 경로 수정 반영: collection(db, 'pixel_chunks')
                     const chunksColRef = collection(db, PIXEL_CHUNKS_PATH);
                     const q = query(chunksColRef);
 
@@ -392,7 +395,7 @@
                                 오류 메시지: {initError}
                             </pre>
                             <p className="mt-4 text-sm text-gray-400">
-                                **필요한 규칙 경로:** /{PIXEL_CHUNKS_PATH}/... 및 /{USER_STATUS_PATH}/{'$'}{'request.auth.uid'}
+                                **필요한 규칙 경로:** /pixel_chunks/... 및 /user_statuses/{'$'}{'request.auth.uid'}
                             </p>
                         </div>
                     );
@@ -519,5 +522,4 @@
     </script>
 </body>
 </html>
-
 
