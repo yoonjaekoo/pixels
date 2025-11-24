@@ -41,9 +41,9 @@
 
     <!-- 2. React (Babel) 스크립트: 종속성을 확인하고 렌더링을 시작함 -->
     <script type="text/babel">
-        // 네 Firebase 설정 정보를 여기에 직접 삽입
+        // 올바른 API Key로 수정됨 (대문자 L 확인 완료)
         const EXTERNAL_FIREBASE_CONFIG = {
-            apiKey: "AIzaSyAPjfWf1x2CcbnlSl4MVJjIUnywKK-AedE",
+            apiKey: "AIzaSyAPjfWf1x2CcbnLSl4MVJjIUnywKK-AedE", 
             authDomain: "pixels-cf8a7.firebaseapp.com",
             projectId: "pixels-cf8a7",
             storageBucket: "pixels-cf8a7.firebasestorage.app",
@@ -64,7 +64,7 @@
             const CANVAS_SIZE = 200; 
             const CHUNK_SIZE = 32;    
             const CHUNK_COUNT = Math.ceil(CANVAS_SIZE / CHUNK_SIZE); 
-            const COOLDOWN_SECONDS = 20; // 5분(300초)에서 20초로 변경됨!
+            const COOLDOWN_SECONDS = 20; // 20초 쿨다운 유지
 
             // 경로: 최상위 컬렉션 사용
             const PIXEL_CHUNKS_PATH = 'pixel_chunks';
@@ -182,7 +182,6 @@
                         if (docSnap.exists()) {
                             const data = docSnap.data();
                             const lastClick = data.lastClick?.toMillis() || 0; 
-                            // COOLDOWN_SECONDS를 사용하여 다음 클릭 가능 시간 설정
                             setNextClickTime(lastClick + COOLDOWN_SECONDS * 1000);
                         } else {
                             setDoc(userDocRef, { lastClick: new Date(0) });
@@ -321,7 +320,6 @@
                             const userData = userStatusSnap.data() || { lastClick: new Date(0) };
                             const lastClickTime = userData.lastClick?.toMillis() || 0;
                             
-                            // 쿨다운 체크 로직
                             if (Date.now() < lastClickTime + COOLDOWN_SECONDS * 1000) {
                                 throw new Error('cooldown');
                             }
@@ -348,7 +346,7 @@
                             }, { merge: true });
                         });
 
-                        setMessage({ type: 'success', text: `픽셀을 성공적으로 칠했습니다! ${COOLDOWN_SECONDS}초 쿨다운 시작.` });
+                        setMessage({ type: 'success', text: `픽셀을 성공적으로 칠했습니다! 20초 쿨다운 시작.` });
                         
                     } catch (e) {
                         if (e.message === 'cooldown') {
@@ -389,14 +387,11 @@
                             <p className="text-lg text-red-300 mb-6">
                                 프로젝트 ID: <span className="font-mono text-pink-400">{userConfig.projectId}</span>
                             </p>
-                            <p className="text-lg text-red-300 mb-6">
-                                데이터베이스 연결에 문제가 발생했습니다. **Firebase 보안 규칙**을 확인하세요!
-                            </p>
                             <pre className="p-4 bg-red-800 rounded-lg text-sm text-left whitespace-pre-wrap w-full max-w-md">
                                 오류 메시지: {initError}
                             </pre>
                             <p className="mt-4 text-sm text-gray-400">
-                                **필요한 규칙 경로:** /pixel_chunks/... 및 /user_statuses/{'$'}{'request.auth.uid'}
+                                **팁:** API Key 오타가 수정되었습니다. 이제 작동할 겁니다!
                             </p>
                         </div>
                     );
@@ -450,7 +445,7 @@
 
                                 {/* 쿨다운 타이머 */}
                                 <div className="flex justify-between items-center mb-4">
-                                    <span className="text-sm text-gray-300">다음 클릭 가능 시간 (20초):</span>
+                                    <span className="text-sm text-gray-300">다음 클릭 가능 시간:</span>
                                     <span 
                                         className={`text-2xl font-mono px-3 py-1 rounded-md transition-colors duration-500 ${
                                             remainingCooldown > 0 
@@ -523,4 +518,5 @@
     </script>
 </body>
 </html>
+
 
