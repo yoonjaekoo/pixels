@@ -43,7 +43,7 @@
     <script type="text/babel">
         // 네 Firebase 설정 정보를 여기에 직접 삽입
         const EXTERNAL_FIREBASE_CONFIG = {
-            apiKey: "AIzaSyAPjfWf1x2CcbnLSl4MVJjIUnywKK-AedE",
+            apiKey: "AIzaSyAPjfWf1x2CcbnlSl4MVJjIUnywKK-AedE",
             authDomain: "pixels-cf8a7.firebaseapp.com",
             projectId: "pixels-cf8a7",
             storageBucket: "pixels-cf8a7.firebasestorage.app",
@@ -60,14 +60,13 @@
             const { useState, useEffect, useCallback, useRef, useMemo } = React;
             const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore, doc, onSnapshot, collection, runTransaction, setDoc, query } = window.firebaseDependencies;
 
-            // --- 전역 설정 및 상수 (200x200으로 수정됨) ---
-            const CANVAS_SIZE = 200; // 캔버스 크기 축소!
+            // --- 전역 설정 및 상수 ---
+            const CANVAS_SIZE = 200; 
             const CHUNK_SIZE = 32;    
-            // 200 / 32 = 6.25 이므로 올림(ceil) 처리하여 7x7 청크 그리드 생성
             const CHUNK_COUNT = Math.ceil(CANVAS_SIZE / CHUNK_SIZE); 
-            const COOLDOWN_SECONDS = 300; 
+            const COOLDOWN_SECONDS = 20; // 5분(300초)에서 20초로 변경됨!
 
-            // 경로 수정: 최상위 컬렉션 사용
+            // 경로: 최상위 컬렉션 사용
             const PIXEL_CHUNKS_PATH = 'pixel_chunks';
             const USER_STATUS_PATH = 'user_statuses';
 
@@ -183,6 +182,7 @@
                         if (docSnap.exists()) {
                             const data = docSnap.data();
                             const lastClick = data.lastClick?.toMillis() || 0; 
+                            // COOLDOWN_SECONDS를 사용하여 다음 클릭 가능 시간 설정
                             setNextClickTime(lastClick + COOLDOWN_SECONDS * 1000);
                         } else {
                             setDoc(userDocRef, { lastClick: new Date(0) });
@@ -283,7 +283,7 @@
                 // 5. 픽셀 클릭 처리
                 const handlePixelClick = useCallback(async (event) => {
                     if (remainingCooldown > 0) {
-                        setMessage({ type: 'warning', text: `쿨다운(${formatTime(remainingCooldown)} 남음)! 5분 뒤에 다시 시도하세요.` });
+                        setMessage({ type: 'warning', text: `쿨다운(${formatTime(remainingCooldown)} 남음)! 20초 뒤에 다시 시도하세요.` });
                         return;
                     }
                     if (!db || !userId) {
@@ -321,6 +321,7 @@
                             const userData = userStatusSnap.data() || { lastClick: new Date(0) };
                             const lastClickTime = userData.lastClick?.toMillis() || 0;
                             
+                            // 쿨다운 체크 로직
                             if (Date.now() < lastClickTime + COOLDOWN_SECONDS * 1000) {
                                 throw new Error('cooldown');
                             }
@@ -347,7 +348,7 @@
                             }, { merge: true });
                         });
 
-                        setMessage({ type: 'success', text: '픽셀을 성공적으로 칠했습니다! 5분 쿨다운 시작.' });
+                        setMessage({ type: 'success', text: `픽셀을 성공적으로 칠했습니다! ${COOLDOWN_SECONDS}초 쿨다운 시작.` });
                         
                     } catch (e) {
                         if (e.message === 'cooldown') {
@@ -449,7 +450,7 @@
 
                                 {/* 쿨다운 타이머 */}
                                 <div className="flex justify-between items-center mb-4">
-                                    <span className="text-sm text-gray-300">다음 클릭 가능 시간:</span>
+                                    <span className="text-sm text-gray-300">다음 클릭 가능 시간 (20초):</span>
                                     <span 
                                         className={`text-2xl font-mono px-3 py-1 rounded-md transition-colors duration-500 ${
                                             remainingCooldown > 0 
@@ -522,5 +523,4 @@
     </script>
 </body>
 </html>
-
 
