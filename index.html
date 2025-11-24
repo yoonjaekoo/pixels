@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Pixel Legacy</title>
+    <title>The Pixel Legacy (200x200)</title>
     <!-- Tailwind CSS CDN 로드 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -49,7 +49,6 @@
             storageBucket: "pixels-cf8a7.firebasestorage.app",
             messagingSenderId: "782062058463",
             appId: "1:782062058463:web:4fdf04dbe5bbaf70ed626a",
-            // measurementId는 Firestore 사용에 필수는 아님
         };
 
         function waitForDependenciesAndRender() {
@@ -61,13 +60,14 @@
             const { useState, useEffect, useCallback, useRef, useMemo } = React;
             const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore, doc, onSnapshot, collection, runTransaction, setDoc, query } = window.firebaseDependencies;
 
-            // --- 전역 설정 및 상수 (경로 수정됨) ---
-            const CANVAS_SIZE = 1024;
+            // --- 전역 설정 및 상수 (200x200으로 수정됨) ---
+            const CANVAS_SIZE = 200; // 캔버스 크기 축소!
             const CHUNK_SIZE = 32;    
-            const CHUNK_COUNT = CANVAS_SIZE / CHUNK_SIZE; 
+            // 200 / 32 = 6.25 이므로 올림(ceil) 처리하여 7x7 청크 그리드 생성
+            const CHUNK_COUNT = Math.ceil(CANVAS_SIZE / CHUNK_SIZE); 
             const COOLDOWN_SECONDS = 300; 
 
-            // 경로 수정: 최상위 컬렉션으로 변경하여 Firebase 세그먼트 오류 해결
+            // 경로 수정: 최상위 컬렉션 사용
             const PIXEL_CHUNKS_PATH = 'pixel_chunks';
             const USER_STATUS_PATH = 'user_statuses';
 
@@ -157,7 +157,6 @@
                                 if (user) {
                                     setUserId(user.uid);
                                 } else {
-                                    // 익명 인증 실패 시 userId는 null
                                     setUserId(null); 
                                 }
                                 setIsAuthReady(true);
@@ -178,7 +177,6 @@
                 useEffect(() => {
                     if (!db || !userId) return;
 
-                    // 경로 수정 반영: doc(db, 'user_statuses', userId)
                     const userDocRef = doc(db, USER_STATUS_PATH, userId);
 
                     const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
@@ -209,7 +207,6 @@
                 useEffect(() => {
                     if (!db || !isAuthReady) return;
 
-                    // 경로 수정 반영: collection(db, 'pixel_chunks')
                     const chunksColRef = collection(db, PIXEL_CHUNKS_PATH);
                     const q = query(chunksColRef);
 
@@ -271,7 +268,10 @@
                                             const x = chunkC * CHUNK_SIZE + j;
                                             const y = chunkR * CHUNK_SIZE + i;
                                             
-                                            ctx.fillRect(x, y, 1, 1); 
+                                            // 캔버스 크기(200) 안쪽만 그리기
+                                            if (x < CANVAS_SIZE && y < CANVAS_SIZE) {
+                                                ctx.fillRect(x, y, 1, 1); 
+                                            }
                                         }
                                     }
                                 }
@@ -418,10 +418,10 @@
                             {/* 헤더 및 상태 */}
                             <header className="text-center mb-6">
                                 <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
-                                    The Pixel Legacy 🖼️
+                                    The Pixel Legacy (200x200) 🖼️
                                 </h1>
                                 <p className="text-sm text-gray-400 mt-1">
-                                    유일한 1024x1024 캔버스에 픽셀 유산을 남겨라.
+                                    200x200 한정판 캔버스에 픽셀 유산을 남겨라.
                                 </p>
                                 <div className="mt-2 p-2 bg-gray-800 rounded-lg text-xs text-gray-300">
                                     당신의 ID: <span className="font-mono text-pink-400 break-all">{currentUserIdDisplay}</span>
@@ -522,4 +522,5 @@
     </script>
 </body>
 </html>
+
 
